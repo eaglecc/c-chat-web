@@ -1,14 +1,10 @@
 # c-chat
 
-This template should help get you started developing with Vue 3 in Vite.
+c-chat 是一个基于 Vue 3 和 Element Plus 的聊天应用。
+TODO:
+    websocket通讯
+    对接大模型
 
-## Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
 
 ## Project Setup
 
