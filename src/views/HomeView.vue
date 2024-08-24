@@ -12,8 +12,27 @@
         </div>
       </el-aside>
       <el-container>
-        <el-header class="header">Header</el-header>
-        <el-main class="main">Main</el-main>
+        <el-header class="header">
+          <label>C-Chat</label>
+        </el-header>
+        <el-main class="main">
+          <div class="message">
+            <label>消息</label>
+
+          </div>
+          <div class="message-input">
+            <el-input
+              v-model="input2"
+              class="m-input"
+              size="large"
+              placeholder="请输入内容"
+            >
+              <template #suffix>
+                <img src="@/assets/images/send_msg.svg" style="width: 30px; height: 30px; cursor: pointer;">
+              </template>
+            </el-input>
+          </div>
+        </el-main>
       </el-container>
     </el-container>
   </div>
@@ -28,6 +47,8 @@ const modules = [
   { id: 2, text: '豆包', image: '/src/assets/images/doubao.svg' },
   { id: 3, text: '元宝', image: '/src/assets/images/yuanbao.svg' }
 ]
+
+const title = ref('豆包')
 
 </script>
 
@@ -74,10 +95,39 @@ const modules = [
       }
       .header {
         height: 60px;
-        background-color: #f0f0f0;
+        background-color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        label {
+            font-size: 20px;
+            font-family: Monaco;
+            font-weight: 450;
+            color: #0a0a0a;
+            line-height: 22px;
+        }
       }
       .main {
-        background-color: #6b4e4e;
+        background-color: #ffffff;
+        height: 600px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        
+        .message {
+          height: 90%;
+          background-color: #c9c9c9;
+        }
+
+        .message-input{
+          height: 10%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          .m-input{
+            width: 80%;
+          }
+        }
       }
     }
 }
