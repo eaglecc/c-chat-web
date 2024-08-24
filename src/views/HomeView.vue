@@ -17,12 +17,17 @@
         </el-header>
         <el-main class="main">
           <div class="message">
-            <label>消息</label>
-
+            <!-- 消息列表 -->
+            <div class="chat-message" v-for="(msg, index) in messages" :key="index" :class="msg.sender === 'user' ? 'user-message' : 'bot-message'">
+              <div :class="msg.sender === 'user' ? 'user-msg' : 'bot-msg'">
+                <span>{{ msg.text }}</span>
+              </div>
+            </div>
           </div>
+          <!-- 输入框 -->
           <div class="message-input">
             <el-input
-              v-model="input2"
+              v-model="inputMsg"
               class="m-input"
               size="large"
               placeholder="请输入内容"
@@ -41,6 +46,7 @@
 <script setup>
 import {ref } from 'vue';
 
+const inputMsg = ref('')
 
 const modules = [
   { id: 1, text: 'ChatGPT', image: "/src/assets/images/Chatgpt.svg" },
@@ -48,7 +54,12 @@ const modules = [
   { id: 3, text: '元宝', image: '/src/assets/images/yuanbao.svg' }
 ]
 
-const title = ref('豆包')
+// 消息列表
+const messages = ref([
+  { sender: 'bot', text: '你好，有什么问题吗？' },
+  { sender: 'user', text: '你好，我想了解一下Vue3。' },
+]);
+
 
 </script>
 
@@ -69,6 +80,7 @@ const title = ref('豆包')
           flex-direction: column;
           justify-content: space-between;
           align-items: center;
+          margin-top: 20%;
           .m-list-item {
             width: 100%;
             height: 60px;
@@ -116,9 +128,38 @@ const title = ref('豆包')
         
         .message {
           height: 90%;
-          background-color: #c9c9c9;
+          background-color: #ffffff;
         }
-
+        .chat-message {
+          margin-top: 10px;
+          margin-bottom: 10px;
+          margin-left: 5px;
+          margin-right: 5px;
+          display: flex;
+        }
+        .user-message {
+          justify-content: flex-end;
+        }
+        .bot-message {
+          justify-content: flex-start;
+        }
+        .user-msg {
+          background-color: #daf8e3;
+          padding: 10px;
+          border-radius: 10px;
+          max-width: 70%;
+          align-self: flex-end;
+          justify-content: flex-end;
+          text-align: left;
+        }
+        .bot-msg {
+          background-color: #f1f0f0;
+          padding: 10px;
+          border-radius: 10px;
+          max-width: 70%;
+          align-self: flex-start;
+          text-align: left;
+        }
         .message-input{
           height: 10%;
           display: flex;
@@ -126,6 +167,7 @@ const title = ref('豆包')
           justify-content: center;
           .m-input{
             width: 80%;
+            height: 80%;
           }
         }
       }
