@@ -16,14 +16,17 @@
           <label>C-Chat</label>
         </el-header>
         <el-main class="main">
-          <div class="message">
-            <!-- 消息列表 -->
-            <div class="chat-message" v-for="(msg, index) in messages" :key="index" :class="msg.sender === 'user' ? 'user-message' : 'bot-message'">
-              <div :class="msg.sender === 'user' ? 'user-msg' : 'bot-msg'">
-                <span>{{ msg.text }}</span>
+          <el-scrollbar height="90%">
+            <div class="m-message">
+              <!-- 消息列表 -->
+              <div class="chat-message" v-for="(msg, index) in messages" :key="index" :class="msg.sender === 'user' ? 'user-message' : 'bot-message'">
+                <div :class="msg.sender === 'user' ? 'user-msg' : 'bot-msg'">
+                  <span>{{ msg.text }}</span>
+                </div>
               </div>
             </div>
-          </div>
+          </el-scrollbar>
+
           <!-- 输入框 -->
           <div class="message-input">
             <el-input
@@ -33,7 +36,7 @@
               placeholder="请输入内容"
             >
               <template #suffix>
-                <img src="@/assets/images/send_msg.svg" style="width: 30px; height: 30px; cursor: pointer;">
+                <img src="@/assets/images/send_msg.svg"  class="input-img" >
               </template>
             </el-input>
           </div>
@@ -58,6 +61,28 @@ const modules = [
 const messages = ref([
   { sender: 'bot', text: '你好，有什么问题吗？' },
   { sender: 'user', text: '你好，我想了解一下Vue3。' },
+  { sender: 'bot', text: '你好，有什么问题吗？' },
+  { sender: 'user', text: '你好，我想了解一下Vue3。' },
+  { sender: 'bot', text: '你好，有什么问题吗？' },
+  { sender: 'user', text: '你好，我想了解一下Vue3。' },
+  { sender: 'bot', text: '你好，有什么问题吗？' },
+  { sender: 'user', text: '你好，我想了解一下Vue3。' },
+  { sender: 'bot', text: '你好，有什么问题吗？' },
+  { sender: 'user', text: '你好，我想了解一下Vue3。' },
+  { sender: 'bot', text: '你好，有什么问题吗？' },
+  { sender: 'user', text: '你好，我想了解一下Vue3。' },
+  { sender: 'bot', text: '你好，有什么问题吗？' },
+  { sender: 'user', text: '你好，我想了解一下Vue3。' },
+  { sender: 'bot', text: '你好，有什么问题吗？' },
+  { sender: 'user', text: '你好，我想了解一下Vue3。' },
+  { sender: 'bot', text: '你好，有什么问题吗？' },
+  { sender: 'user', text: '你好，我想了解一下Vue3。' },
+  { sender: 'bot', text: '你好，有什么问题吗？' },
+  { sender: 'user', text: '你好，我想了解一下Vue3。' },
+  { sender: 'bot', text: '你好，有什么问题吗？' },
+  { sender: 'user', text: '你好，我想了解一下Vue3。' },
+  { sender: 'bot', text: '你好，有什么问题吗？' },
+  { sender: 'user', text: '你好，我想了解一下Vue3。' },
 ]);
 
 
@@ -71,7 +96,8 @@ const messages = ref([
     .el-container {
       height: 100%;
       .aside {
-        height: auto;
+        max-height: 100vh;
+        overflow-y: auto;
         width: 12%;
         background-color: #ffffff;
         .m-list {
@@ -106,8 +132,8 @@ const messages = ref([
         }
       }
       .header {
-        height: 60px;
-        background-color: #ffffff;
+        height: 8vh;
+        background-color: rgb(246, 249, 252);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -120,15 +146,30 @@ const messages = ref([
         }
       }
       .main {
-        background-color: #ffffff;
-        height: 600px;
+        background-color: rgb(246, 249, 252);
+        height: 90vh;
         width: 100%;
         display: flex;
         flex-direction: column;
-        
-        .message {
-          height: 90%;
-          background-color: #ffffff;
+        justify-content: space-between;
+        .m-message {
+          height: 100%;
+          /* overflow-y: auto; */
+        }
+        .message-input{
+          height: 7%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          .m-input{
+            width: 80%;
+            height: 80%;
+          }
+          .input-img{
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+          }
         }
         .chat-message {
           margin-top: 10px;
@@ -159,16 +200,6 @@ const messages = ref([
           max-width: 70%;
           align-self: flex-start;
           text-align: left;
-        }
-        .message-input{
-          height: 10%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          .m-input{
-            width: 80%;
-            height: 80%;
-          }
         }
       }
     }
