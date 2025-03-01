@@ -19,11 +19,12 @@
         <el-main class="main">
           <el-scrollbar height="90%">
             <div class="m-message">
-              <!-- 消息列表 -->
-              <div class="chat-message" v-for="(msg, index) in pageMessages" :key="index"
-                :class="msg.sender === 'user' ? 'user-message' : 'bot-message'">
-                <div :class="msg.sender === 'user' ? 'user-msg' : 'bot-msg'">
-                  <span>{{ msg.text }}</span>
+              <div class="chat-message" v-for="(msg, index) in messages" :key="index"
+                :class="msg.role === 'user' ? 'user-message' : 'bot-message'">
+                <div :class="msg.role === 'user' ? 'user-msg' : 'bot-msg'">
+                  <div style="color: gray" v-if="msg.role === 'assistant'" v-html="formatContent(msg.content)"></div>
+                  <div style="color: gray" v-else>{{ msg.content }}<p></p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -39,7 +40,8 @@
             </el-select>
             <!-- 输入框 -->
             <div class="message-input">
-              <el-input v-model="inputMsg" class="m-input" placeholder="请输入内容" @keyup.enter="sendMessage()">
+              <el-input type="textarea" :rows="5" :autofocus="true" v-model="inputMsg" class="m-input"
+                placeholder="请输入你的问题" @keyup.enter="sendMessage()">
                 <template #suffix>
                   <img src="@/assets/images/send_msg.svg" class="input-img">
                 </template>
@@ -60,6 +62,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 
 const inputMsg = ref('')
 const selectedModule = ref('')
+let currentIndex = 0
 
 const modules = [
   { id: 1, text: 'ChatGPT', image: "/src/assets/images/Chatgpt.svg" },
@@ -76,35 +79,73 @@ const chatHistory = [
 ]
 
 // 消息列表
-const pageMessages = ref([]);
+const messages = ref([{
+  "role": "system",
+  "content": "You are a helpful assistant."
+}]);
+
+function formatContent(content) {
+  return marked.parse(content);
+}
 
 const sendMessage = async () => {
   console.log(inputMsg.value)
-  pageMessages.value.push({ sender: 'user', text: inputMsg.value })
-
+  messages.value.push({ role: 'user', content: inputMsg.value })
+  console.log("messages：", messages.value)
   try {
     const dataInfo = {
-      messages: [
-        { role: "user", content: inputMsg.value } // 使用输入的消息内容
-      ],
+      messages: messages.value,
       temperature: 0.7,
-      max_tokens: 500
+      max_tokens: 4096
     }
+    currentIndex += 1 // 对话次数加1
+    inputMsg.value = '' // 清空对话框
+
     var res = await stratNewChatReq(dataInfo);
     console.log(res)
     if (res.status === "success") {
-      pageMessages.value.push({ sender: 'bot', text: res.response })
+      messages.value.push({ role: 'assistant', content: "" }) // 创建bot返回消息体
+      currentIndex += 1 // 索引+1
+
+      const base64Response = res.response; // 假设 res.response 是 Base64 编码的字符串
+      const binaryString = atob(base64Response); // 将 Base64 字符串转换为二进制字符串
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i); // 将二进制字符串转换为字节数组
+      }
+
+      const chunkText = new TextDecoder('utf-8').decode(bytes); // 解码字节数组
+
+      console.log("chunkText...", chunkText)
+      chunkText.split('\n').forEach(line => {
+        if (line) {
+          if (line === 'data: [DONE]') {
+            return
+          }
+          line = line.replaceAll('data: ', '');
+          const data = JSON.parse(line);
+          if (data.choices[0].finish_reason && data.choices[0].finish_reason === 'stop') {
+            return;
+          }
+          if (data.choices[0].delta.content) {
+            const charText = data.choices[0].delta.content;
+            console.log("每一行解析后的值：", charText)
+            messages.value[currentIndex].content += charText
+          }
+        }
+      });
     } else {
       ElMessage({
         type: 'error',
         message: '服务器繁忙，请稍后再试！'
       })
     }
-    inputMsg.value = ''
   } catch (error) {
+    console.log("error...", error)
     ElMessage({
       type: 'error',
-      message: '服务器繁忙，请稍后再试！'
+      message: '服务器内部错误，请稍后再试！'
     })
   }
 }
@@ -195,11 +236,6 @@ const sendMessage = async () => {
         display: flex;
         align-items: center;
         justify-content: center;
-
-        /* .m-input {
-          width: 80%;
-          height: 80%;
-        } */
 
         .input-img {
           width: 20px;
