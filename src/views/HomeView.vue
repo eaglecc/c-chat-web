@@ -20,7 +20,7 @@
           <el-scrollbar height="90%">
             <div class="m-message">
               <!-- 消息列表 -->
-              <div class="chat-message" v-for="(msg, index) in messages" :key="index"
+              <div class="chat-message" v-for="(msg, index) in pageMessages" :key="index"
                 :class="msg.sender === 'user' ? 'user-message' : 'bot-message'">
                 <div :class="msg.sender === 'user' ? 'user-msg' : 'bot-msg'">
                   <span>{{ msg.text }}</span>
@@ -39,7 +39,7 @@
             </el-select>
             <!-- 输入框 -->
             <div class="message-input">
-              <el-input v-model="inputMsg" class="m-input" placeholder="请输入内容">
+              <el-input v-model="inputMsg" class="m-input" placeholder="请输入内容" @keyup.enter="sendMessage()">
                 <template #suffix>
                   <img src="@/assets/images/send_msg.svg" class="input-img">
                 </template>
@@ -55,6 +55,8 @@
 
 <script setup>
 import { ref } from 'vue';
+import { stratNewChatReq } from '@/api/Chat'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const inputMsg = ref('')
 const selectedModule = ref('')
@@ -67,19 +69,45 @@ const modules = [
 ]
 
 const chatHistory = [
-  { id: 1, text: 'C++是什么？'},
-  { id: 2, text: 'Java是什么？'},
-  { id: 3, text: 'Python是什么？'},
+  { id: 1, text: 'C++是什么？' },
+  { id: 2, text: 'Java是什么？' },
+  { id: 3, text: 'Python是什么？' },
 
 ]
 
 // 消息列表
-const messages = ref([
-  { sender: 'bot', text: '你好，有什么问题吗？' },
-  { sender: 'user', text: '你好，我想了解一下Vue3。' },
-  { sender: 'bot', text: '你好，有什么问题吗？' },
-  { sender: 'user', text: '你好，我想了解一下Vue3。' },
-]);
+const pageMessages = ref([]);
+
+const sendMessage = async () => {
+  console.log(inputMsg.value)
+  pageMessages.value.push({ sender: 'user', text: inputMsg.value })
+
+  try {
+    const dataInfo = {
+      messages: [
+        { role: "user", content: inputMsg.value } // 使用输入的消息内容
+      ],
+      temperature: 0.7,
+      max_tokens: 500
+    }
+    var res = await stratNewChatReq(dataInfo);
+    console.log(res)
+    if (res.status === "success") {
+      pageMessages.value.push({ sender: 'bot', text: res.response })
+    } else {
+      ElMessage({
+        type: 'error',
+        message: '服务器繁忙，请稍后再试！'
+      })
+    }
+    inputMsg.value = ''
+  } catch (error) {
+    ElMessage({
+      type: 'error',
+      message: '服务器繁忙，请稍后再试！'
+    })
+  }
+}
 
 </script>
 
@@ -168,10 +196,10 @@ const messages = ref([
         align-items: center;
         justify-content: center;
 
-        .m-input {
-          /* width: 80%; */
-          /* height: 80%; */
-        }
+        /* .m-input {
+          width: 80%;
+          height: 80%;
+        } */
 
         .input-img {
           width: 20px;
