@@ -26,4 +26,4 @@ npm run dev
 
 # 项目截图
 
-![1](./img/截图.jpg)
+![1](./img/image.jpg)

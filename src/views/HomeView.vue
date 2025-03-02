@@ -22,8 +22,8 @@
               <div class="chat-message" v-for="(msg, index) in messages" :key="index"
                 :class="msg.role === 'user' ? 'user-message' : 'bot-message'">
                 <div :class="msg.role === 'user' ? 'user-msg' : 'bot-msg'">
-                  <div style="color: gray" v-if="msg.role === 'assistant'" v-html="formatContent(msg.content)"></div>
-                  <div style="color: gray" v-else>{{ msg.content }}<p></p>
+                  <div v-if="msg.role === 'assistant'" v-html="formatContent(msg.content)"></div>
+                  <div v-else>{{ msg.content }}
                   </div>
                 </div>
               </div>
@@ -62,7 +62,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 
 const inputMsg = ref('')
 const selectedModule = ref('')
-let currentIndex = 0
+let currentIndex = 1
 
 const modules = [
   { id: 1, text: 'ChatGPT', image: "/src/assets/images/Chatgpt.svg" },
@@ -88,59 +88,49 @@ function formatContent(content) {
   return marked.parse(content);
 }
 
+
 const sendMessage = async () => {
-  console.log(inputMsg.value)
   messages.value.push({ role: 'user', content: inputMsg.value })
-  console.log("messages：", messages.value)
   try {
     const dataInfo = {
       messages: messages.value,
       temperature: 0.7,
       max_tokens: 4096
     }
-    currentIndex += 1 // 对话次数加1
-    inputMsg.value = '' // 清空对话框
-
-    var res = await stratNewChatReq(dataInfo);
-    console.log(res)
-    if (res.status === "success") {
-      messages.value.push({ role: 'assistant', content: "" }) // 创建bot返回消息体
-      currentIndex += 1 // 索引+1
-
-      const base64Response = res.response; // 假设 res.response 是 Base64 编码的字符串
-      const binaryString = atob(base64Response); // 将 Base64 字符串转换为二进制字符串
-      const len = binaryString.length;
-      const bytes = new Uint8Array(len);
-      for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i); // 将二进制字符串转换为字节数组
+    const ws = new WebSocket("ws://localhost:9998/api/v1/chat/ws");
+    // 监听消息响应
+    ws.onmessage = (event) => {
+      console.log('Message from server: ', event.data);
+      const res = event
+      if (res.type === "message") {
+        messages.value[currentIndex].content += res.data
+      } else {
+        ElMessage({
+          type: 'error',
+          message: '服务器繁忙，请稍后再试！'
+        })
       }
+    };
 
-      const chunkText = new TextDecoder('utf-8').decode(bytes); // 解码字节数组
+    // onopen 中可以发送数据
+    ws.onopen = () => {
+      console.log("WebSocket 连接成功！");
+      ws.send(JSON.stringify(dataInfo));
+      
+      messages.value.push({ role: 'assistant', content: "" }) // 创建bot返回消息体
+      currentIndex += 1 // 索引+1，指向assistant返回的消息体
+      inputMsg.value = '' // 清空对话框
 
-      console.log("chunkText...", chunkText)
-      chunkText.split('\n').forEach(line => {
-        if (line) {
-          if (line === 'data: [DONE]') {
-            return
-          }
-          line = line.replaceAll('data: ', '');
-          const data = JSON.parse(line);
-          if (data.choices[0].finish_reason && data.choices[0].finish_reason === 'stop') {
-            return;
-          }
-          if (data.choices[0].delta.content) {
-            const charText = data.choices[0].delta.content;
-            console.log("每一行解析后的值：", charText)
-            messages.value[currentIndex].content += charText
-          }
-        }
-      });
-    } else {
-      ElMessage({
-        type: 'error',
-        message: '服务器繁忙，请稍后再试！'
-      })
-    }
+    };
+
+    ws.onclose = () => {
+      console.log("WebSocket 连接关闭！");
+      currentIndex += 1 // 索引+1，指向assistant返回的消息体
+    };
+
+    ws.onerror = (error) => {
+      console.log("WebSocket 发生错误:", error);
+    };
   } catch (error) {
     console.log("error...", error)
     ElMessage({
@@ -261,12 +251,12 @@ const sendMessage = async () => {
       }
 
       .user-msg {
+        display: flex;
+        justify-content: center;
         background-color: #daf8e3;
         padding: 10px;
         border-radius: 10px;
         max-width: 70%;
-        align-self: flex-end;
-        justify-content: flex-end;
         text-align: left;
       }
 
@@ -275,8 +265,8 @@ const sendMessage = async () => {
         padding: 10px;
         border-radius: 10px;
         max-width: 70%;
-        align-self: flex-start;
-        text-align: left;
+        /* align-self: flex-start; */
+        /* text-align: left; */
       }
 
       .m-select {
