@@ -12,6 +12,8 @@ c-chat 是一个基于 Vue3、Element Plus、axios 的聊天应用。
 | 元宝|    |  ❌ |
 | 豆包|    | ❌  |
 
+TODO：大模型参数调优学习
+
 ## Project Setup
 
 ```sh
